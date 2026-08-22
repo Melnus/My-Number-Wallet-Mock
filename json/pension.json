@@ -1,0 +1,25 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1"
+  ],
+  "id": "urn:demo:vc:pension-004",
+  "type": [
+    "VerifiableCredential",
+    "PensionCredential"
+  ],
+  "issuer": {
+    "id": "did:example:demo-pension-authority",
+    "name": "デモ年金機関（架空）"
+  },
+  "issuanceDate": "2026-05-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:example:demo-user-001",
+    "pensionType": "厚生年金保険",
+    "totalMonths": 120
+  },
+  "proof": {
+    "type": "DemoSignature",
+    "status": "DEMO_ONLY",
+    "note": "これは実際の電子署名ではありません。"
+  }
+}
