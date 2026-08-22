@@ -1,0 +1,2341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="referrer"
+        content="no-referrer"
+    >
+
+    <meta
+        http-equiv="X-Content-Type-Options"
+        content="nosniff"
+    >
+
+    <meta
+        http-equiv="Content-Security-Policy"
+        content="
+            default-src 'self';
+            script-src 'self';
+            style-src 'self' 'unsafe-inline';
+            img-src 'self' data:;
+            font-src 'self';
+            connect-src 'self';
+            object-src 'none';
+            base-uri 'self';
+            form-action 'self';
+        "
+    >
+
+    <title>デジタルIDウォレット | デモ</title>
+
+    <style>
+        :root {
+            --primary: #e60044;
+            --primary-dark: #c7003b;
+            --primary-light: #fff0f4;
+
+            --background: #f6f7f9;
+            --surface: #ffffff;
+
+            --text: #202124;
+            --muted: #6b7280;
+
+            --border: #e5e7eb;
+
+            --success: #087f5b;
+            --success-bg: #ecfdf5;
+
+            --warning: #92400e;
+            --warning-bg: #fff7ed;
+
+            --danger: #b91c1c;
+            --danger-bg: #fef2f2;
+
+            --info: #1d4ed8;
+            --info-bg: #eff6ff;
+
+            --radius: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Noto Sans JP",
+                "Yu Gothic",
+                "Meiryo",
+                sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--background);
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* =========================
+           Header
+        ========================= */
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-inner {
+            width: min(1100px, calc(100% - 32px));
+            margin: auto;
+
+            min-height: 68px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 16px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            min-width: 0;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+
+            flex-shrink: 0;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 11px;
+
+            background: var(--primary);
+            color: white;
+
+            font-weight: 800;
+        }
+
+        .brand-title {
+            font-size: 15px;
+            font-weight: 800;
+
+            line-height: 1.2;
+        }
+
+        .brand-subtitle {
+            margin-top: 3px;
+
+            color: var(--muted);
+
+            font-size: 10px;
+            font-family: monospace;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            max-width: 300px;
+        }
+
+        .header-user {
+            text-align: right;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .credential-count {
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        /* =========================
+           Main
+        ========================= */
+
+        main {
+            width: min(1100px, calc(100% - 32px));
+            margin: 0 auto;
+
+            flex: 1;
+
+            padding: 24px 0 40px;
+        }
+
+        .demo-warning {
+            margin-bottom: 20px;
+
+            padding: 14px 16px;
+
+            border: 1px solid #fed7aa;
+            border-radius: var(--radius);
+
+            background: var(--warning-bg);
+        }
+
+        .demo-warning-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--warning);
+        }
+
+        .demo-warning-text {
+            margin-top: 5px;
+
+            color: #78350f;
+
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .hero {
+            margin-bottom: 24px;
+
+            padding: 20px;
+
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff1f4 0%,
+                    #ffffff 50%,
+                    #eff6ff 100%
+                );
+        }
+
+        .hero-title {
+            margin: 0;
+
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .hero-description {
+            margin: 7px 0 0;
+
+            color: var(--muted);
+
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .section-title {
+            margin: 0 0 12px;
+
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        /* =========================
+           Credential cards
+        ========================= */
+
+        .credential-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 12px;
+
+            margin-bottom: 28px;
+        }
+
+        .credential-card {
+            display: flex;
+            flex-direction: column;
+
+            overflow: hidden;
+
+            background: var(--surface);
+
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .credential-header {
+            padding: 14px;
+
+            border-bottom: 1px solid var(--border);
+        }
+
+        .issuer {
+            display: inline-block;
+
+            padding: 3px 7px;
+
+            border-radius: 5px;
+
+            background: var(--info-bg);
+            color: var(--info);
+
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .credential-title {
+            margin-top: 7px;
+
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .credential-body {
+            padding: 12px;
+
+            background: #fafafa;
+
+            flex: 1;
+        }
+
+        .claim-row {
+            display: grid;
+
+            grid-template-columns: 1fr 1.2fr;
+
+            gap: 8px;
+
+            padding: 4px 0;
+
+            font-size: 10px;
+        }
+
+        .claim-key {
+            color: var(--muted);
+
+            overflow-wrap: anywhere;
+        }
+
+        .claim-value {
+            font-weight: 700;
+
+            overflow-wrap: anywhere;
+            text-align: right;
+        }
+
+        .credential-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 6px;
+
+            padding: 8px 12px;
+
+            border-top: 1px solid var(--border);
+
+            color: var(--success);
+
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .demo-signature {
+            color: var(--muted);
+
+            font-family: monospace;
+            font-weight: 400;
+        }
+
+        /* =========================
+           Selective disclosure
+        ========================= */
+
+        .disclosure-panel {
+            padding: 18px;
+
+            background: white;
+
+            border:
+                2px solid
+                rgba(230, 0, 68, 0.18);
+
+            border-radius: var(--radius);
+
+            box-shadow:
+                0 4px 14px rgba(0, 0, 0, 0.04);
+        }
+
+        .panel-title {
+            margin: 0;
+
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .panel-description {
+            margin: 6px 0 16px;
+
+            color: var(--muted);
+
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .scenario-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+
+            gap: 10px;
+        }
+
+        .scenario-button {
+            padding: 14px;
+
+            text-align: left;
+
+            background: white;
+
+            border: 1px solid var(--border);
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            transition:
+                border-color 0.15s,
+                background 0.15s,
+                transform 0.15s;
+        }
+
+        .scenario-button:hover {
+            border-color: var(--primary);
+
+            background: var(--primary-light);
+
+            transform: translateY(-1px);
+        }
+
+        .scenario-title {
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .scenario-description {
+            margin-top: 6px;
+
+            color: var(--muted);
+
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        code {
+            padding: 2px 4px;
+
+            background: #f3f4f6;
+
+            border-radius: 4px;
+
+            font-family: monospace;
+            font-size: 9px;
+        }
+
+        /* =========================
+           Footer
+        ========================= */
+
+        footer {
+            padding: 18px;
+
+            background: white;
+
+            border-top: 1px solid var(--border);
+
+            color: var(--muted);
+
+            text-align: center;
+
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           Modal
+        ========================= */
+
+        .modal {
+            position: fixed;
+            inset: 0;
+
+            z-index: 100;
+
+            display: none;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 16px;
+
+            background: rgba(0, 0, 0, 0.62);
+        }
+
+        .modal.is-open {
+            display: flex;
+        }
+
+        .modal-card {
+            width: min(650px, 100%);
+
+            max-height: 90vh;
+
+            overflow: auto;
+
+            padding: 20px;
+
+            background: white;
+
+            border-radius: 18px;
+
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            padding-bottom: 12px;
+
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .close-button {
+            width: 32px;
+            height: 32px;
+
+            border: 0;
+            border-radius: 8px;
+
+            background: #f3f4f6;
+
+            cursor: pointer;
+
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .modal-section {
+            margin-top: 16px;
+        }
+
+        .info-box {
+            padding: 10px 12px;
+
+            border-radius: 9px;
+
+            background: var(--info-bg);
+
+            color: #1e3a8a;
+
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .success-box {
+            padding: 10px 12px;
+
+            border-radius: 9px;
+
+            background: var(--success-bg);
+
+            color: #065f46;
+
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .json-preview {
+            margin: 8px 0 0;
+
+            padding: 12px;
+
+            max-height: 300px;
+
+            overflow: auto;
+
+            background: #111827;
+            color: #86efac;
+
+            border-radius: 9px;
+
+            font-family: monospace;
+            font-size: 10px;
+
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .modal-actions {
+            display: flex;
+
+            gap: 8px;
+
+            margin-top: 16px;
+        }
+
+        .button {
+            flex: 1;
+
+            padding: 10px 14px;
+
+            border: 0;
+            border-radius: 9px;
+
+            cursor: pointer;
+
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .button-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .button-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        /* =========================
+           Audit table
+        ========================= */
+
+        .audit-table-wrapper {
+            overflow-x: auto;
+
+            border: 1px solid var(--border);
+            border-radius: 9px;
+        }
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+
+            font-size: 10px;
+        }
+
+        th,
+        td {
+            padding: 9px;
+
+            text-align: left;
+
+            border-bottom: 1px solid var(--border);
+
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f9fafb;
+
+            color: var(--muted);
+
+            font-size: 9px;
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .empty {
+            padding: 30px;
+
+            color: var(--muted);
+
+            text-align: center;
+        }
+
+        .status {
+            display: inline-block;
+
+            padding: 3px 6px;
+
+            border-radius: 5px;
+
+            background: var(--success-bg);
+
+            color: var(--success);
+
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        /* =========================
+           Loading / error
+        ========================= */
+
+        .loading {
+            padding: 30px;
+
+            color: var(--muted);
+
+            text-align: center;
+
+            background: white;
+
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .error {
+            padding: 14px;
+
+            background: var(--danger-bg);
+
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+
+            color: var(--danger);
+
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           Responsive
+        ========================= */
+
+        @media (max-width: 850px) {
+            .credential-grid {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+            .scenario-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .header-inner {
+                width: min(100% - 20px, 1100px);
+            }
+
+            main {
+                width: min(100% - 20px, 1100px);
+            }
+
+            .header-user {
+                display: none;
+            }
+
+            .brand-subtitle {
+                max-width: 180px;
+            }
+
+            .credential-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 16px;
+            }
+
+            .disclosure-panel {
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- =========================
+         Header
+    ========================== -->
+
+    <header>
+        <div class="header-inner">
+
+            <div class="brand">
+
+                <div class="brand-icon">
+                    ID
+                </div>
+
+                <div>
+                    <div class="brand-title">
+                        デジタルIDウォレット
+                    </div>
+
+                    <div
+                        id="holder-did-display"
+                        class="brand-subtitle"
+                    >
+                        識別子を読み込み中...
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="header-user">
+
+                <div
+                    id="holder-name-display"
+                    class="user-name"
+                >
+                    --
+                </div>
+
+                <div
+                    id="vc-count-display"
+                    class="credential-count"
+                >
+                    資格情報を取得中...
+                </div>
+
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- =========================
+         Main
+    ========================== -->
+
+    <main>
+
+        <section class="demo-warning">
+
+            <div class="demo-warning-title">
+                ⚠️ デモ・プロトタイプ
+            </div>
+
+            <div class="demo-warning-text">
+                このサイトはデジタルIDウォレットの概念実証です。
+                表示される資格情報はすべて架空データです。
+                実在する行政機関・金融機関・保険者等による発行・認証・署名・通信は行っていません。
+            </div>
+
+        </section>
+
+
+        <section class="hero">
+
+            <h1 class="hero-title">
+                📱 選択的開示型デジタルIDウォレット
+            </h1>
+
+            <p class="hero-description">
+                複数の資格情報から、提示先が必要とするClaimだけを選択して
+                Verifiable Presentation（VP）形式のデータとして生成するUIデモです。
+                元の資格情報をそのまま提示するのではなく、
+                必要最小限の情報だけを提示するという考え方を確認できます。
+            </p>
+
+        </section>
+
+
+        <!-- =========================
+             Credentials
+        ========================== -->
+
+        <section>
+
+            <h2 class="section-title">
+                🗂️ 保有している資格情報
+            </h2>
+
+            <div
+                id="vc-container"
+                class="credential-grid"
+            >
+                <div class="loading">
+                    資格情報を読み込んでいます...
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             Selective disclosure
+        ========================== -->
+
+        <section class="disclosure-panel">
+
+            <h2 class="panel-title">
+                🔐 選択的開示シミュレーター
+            </h2>
+
+            <p class="panel-description">
+                各シナリオを選択すると、必要なClaimだけを抽出した
+                VPデータを生成します。
+                実際の暗号署名・送信は行わないシミュレーションです。
+            </p>
+
+            <div class="scenario-grid">
+
+                <button
+                    class="scenario-button"
+                    data-scenario="AGE_VERIFY"
+                >
+                    <div class="scenario-title">
+                        ① 年齢確認
+                    </div>
+
+                    <div class="scenario-description">
+                        生年月日や氏名を提示せず、
+                        <code>isOver20</code>
+                        だけを提示する。
+                    </div>
+                </button>
+
+
+                <button
+                    class="scenario-button"
+                    data-scenario="BANK_LOAN"
+                >
+                    <div class="scenario-title">
+                        ② ローン審査
+                    </div>
+
+                    <div class="scenario-description">
+                        氏名と
+                        <code>isIncomeOver300k</code>
+                        だけを提示する。
+                    </div>
+                </button>
+
+
+                <button
+                    class="scenario-button"
+                    data-scenario="OFFICE_MOVE"
+                >
+                    <div class="scenario-title">
+                        ③ 行政手続き
+                    </div>
+
+                    <div class="scenario-description">
+                        氏名・住所・課税状態だけを提示する。
+                    </div>
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         Footer
+    ========================== -->
+
+    <footer>
+        デジタルIDウォレット概念実証 / GitHub Pages
+        <br>
+        W3C Verifiable Credentialsを参考にしたデモ実装
+        <br>
+        <strong>実際の行政サービス・電子署名・本人確認には使用できません。</strong>
+    </footer>
+
+</div>
+
+
+<!-- =========================
+     Presentation Modal
+========================== -->
+
+<div
+    id="presentation-modal"
+    class="modal"
+    aria-hidden="true"
+>
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <div class="modal-title">
+                🔐 提示データ
+            </div>
+
+            <button
+                id="presentation-close"
+                class="close-button"
+                aria-label="閉じる"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-section">
+
+            <div
+                id="presentation-info"
+                class="info-box"
+            >
+                --
+            </div>
+
+        </div>
+
+
+        <div class="modal-section">
+
+            <div
+                id="presentation-status"
+                class="success-box"
+            >
+                必要なClaimだけを抽出しました。
+            </div>
+
+        </div>
+
+
+        <div class="modal-section">
+
+            <div>
+                <strong style="font-size:11px;">
+                    生成されたVP（シミュレーション）
+                </strong>
+            </div>
+
+            <pre
+                id="vp-preview"
+                class="json-preview"
+            ></pre>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button
+                id="presentation-cancel"
+                class="button button-secondary"
+            >
+                閉じる
+            </button>
+
+            <button
+                id="presentation-submit"
+                class="button button-primary"
+            >
+                提示をシミュレーション
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     Audit Modal
+========================== -->
+
+<div
+    id="audit-modal"
+    class="modal"
+    aria-hidden="true"
+>
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <div class="modal-title">
+                📜 提示履歴
+            </div>
+
+            <button
+                id="audit-close"
+                class="close-button"
+                aria-label="閉じる"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-section">
+
+            <div class="audit-table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>日時</th>
+                            <th>提示先</th>
+                            <th>目的</th>
+                            <th>開示Claim</th>
+                            <th>状態</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody
+                        id="audit-table-body"
+                    ></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button
+                id="audit-clear"
+                class="button button-secondary"
+            >
+                履歴を消去
+            </button>
+
+            <button
+                id="audit-close-bottom"
+                class="button button-primary"
+            >
+                閉じる
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+"use strict";
+
+
+/* =========================================================
+   Demo Wallet
+========================================================= */
+
+const Wallet = {
+
+    credentials: new Map(),
+
+    auditStorageKey: "demo_myna_wallet_audit_v1",
+
+    currentPresentation: null,
+
+
+    /* -----------------------------------------------------
+       Credential files
+    ----------------------------------------------------- */
+
+    credentialFiles: [
+        "./json/identity.json",
+        "./json/tax.json",
+        "./json/health.json",
+        "./json/pension.json"
+    ],
+
+
+    /* -----------------------------------------------------
+       Presentation scenarios
+    ----------------------------------------------------- */
+
+    scenarios: {
+
+        AGE_VERIFY: {
+
+            verifier: "年齢確認システム（デモ）",
+
+            purpose: "成人確認",
+
+            claims: [
+                "IdentityCredential.isOver20"
+            ]
+
+        },
+
+
+        BANK_LOAN: {
+
+            verifier: "金融機関ローン審査システム（デモ）",
+
+            purpose: "所得条件確認",
+
+            claims: [
+                "IdentityCredential.name",
+                "TaxIncomeCredential.isIncomeOver300k"
+            ]
+
+        },
+
+
+        OFFICE_MOVE: {
+
+            verifier: "自治体手続きシステム（デモ）",
+
+            purpose: "住所・課税状態確認",
+
+            claims: [
+                "IdentityCredential.name",
+                "IdentityCredential.address",
+                "TaxIncomeCredential.taxableStatus"
+            ]
+
+        }
+
+    },
+
+
+    /* -----------------------------------------------------
+       Initialization
+    ----------------------------------------------------- */
+
+    async init() {
+
+        try {
+
+            const results =
+                await Promise.all(
+                    this.credentialFiles.map(
+                        file => this.loadJSON(file)
+                    )
+                );
+
+
+            for (const vc of results) {
+
+                if (
+                    !vc ||
+                    !Array.isArray(vc.type) ||
+                    vc.type.length < 2 ||
+                    !vc.credentialSubject
+                ) {
+
+                    throw new Error(
+                        "VC形式が不正です。"
+                    );
+
+                }
+
+
+                this.credentials.set(
+                    vc.type[1],
+                    vc
+                );
+
+            }
+
+
+            this.renderHolder();
+
+            this.renderCredentials();
+
+            this.renderAudit();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            this.renderError(
+                "資格情報の読み込みに失敗しました。"
+            );
+
+        }
+
+    },
+
+
+    /* -----------------------------------------------------
+       JSON loader
+    ----------------------------------------------------- */
+
+    async loadJSON(url) {
+
+        const response =
+            await fetch(url, {
+                cache: "no-store"
+            });
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}: ${url}`
+            );
+
+        }
+
+
+        return await response.json();
+
+    },
+
+
+    /* -----------------------------------------------------
+       Holder
+    ----------------------------------------------------- */
+
+    renderHolder() {
+
+        const identity =
+            this.credentials.get(
+                "IdentityCredential"
+            );
+
+
+        if (!identity) {
+
+            throw new Error(
+                "IdentityCredentialがありません。"
+            );
+
+        }
+
+
+        const subject =
+            identity.credentialSubject;
+
+
+        document
+            .getElementById("holder-name-display")
+            .textContent =
+            `${subject.name} 様`;
+
+
+        document
+            .getElementById("holder-did-display")
+            .textContent =
+            `${subject.id}（デモ識別子）`;
+
+
+        document
+            .getElementById("vc-count-display")
+            .textContent =
+            `資格情報: ${this.credentials.size}件`;
+
+    },
+
+
+    /* -----------------------------------------------------
+       Credential cards
+    ----------------------------------------------------- */
+
+    renderCredentials() {
+
+        const container =
+            document.getElementById(
+                "vc-container"
+            );
+
+
+        container.replaceChildren();
+
+
+        for (const vc of this.credentials.values()) {
+
+            const card =
+                document.createElement("article");
+
+
+            card.className =
+                "credential-card";
+
+
+            /* Header */
+
+            const header =
+                document.createElement("div");
+
+            header.className =
+                "credential-header";
+
+
+            const issuer =
+                document.createElement("span");
+
+            issuer.className =
+                "issuer";
+
+            issuer.textContent =
+                vc.issuer?.name ||
+                "発行者不明";
+
+
+            const title =
+                document.createElement("div");
+
+            title.className =
+                "credential-title";
+
+            title.textContent =
+                vc.type[1];
+
+
+            header.append(
+                issuer,
+                title
+            );
+
+
+            /* Body */
+
+            const body =
+                document.createElement("div");
+
+            body.className =
+                "credential-body";
+
+
+            const subject =
+                vc.credentialSubject;
+
+
+            for (
+                const [key, value]
+                of Object.entries(subject)
+            ) {
+
+                if (key === "id") {
+                    continue;
+                }
+
+
+                const row =
+                    document.createElement("div");
+
+                row.className =
+                    "claim-row";
+
+
+                const keyElement =
+                    document.createElement("div");
+
+                keyElement.className =
+                    "claim-key";
+
+                keyElement.textContent =
+                    key;
+
+
+                const valueElement =
+                    document.createElement("div");
+
+                valueElement.className =
+                    "claim-value";
+
+                valueElement.textContent =
+                    this.formatValue(
+                        key,
+                        value
+                    );
+
+
+                row.append(
+                    keyElement,
+                    valueElement
+                );
+
+
+                body.append(row);
+
+            }
+
+
+            /* Footer */
+
+            const footer =
+                document.createElement("div");
+
+            footer.className =
+                "credential-footer";
+
+
+            const status =
+                document.createElement("span");
+
+            status.textContent =
+                "✓ VC構造確認済み";
+
+
+            const signature =
+                document.createElement("span");
+
+            signature.className =
+                "demo-signature";
+
+            signature.textContent =
+                "DEMO";
+
+
+            footer.append(
+                status,
+                signature
+            );
+
+
+            card.append(
+                header,
+                body,
+                footer
+            );
+
+
+            container.append(card);
+
+        }
+
+    },
+
+
+    /* -----------------------------------------------------
+       Value formatting
+    ----------------------------------------------------- */
+
+    formatValue(key, value) {
+
+        if (
+            key === "grossIncome" ||
+            key === "taxAmount"
+        ) {
+
+            if (
+                typeof value === "number"
+            ) {
+
+                return new Intl.NumberFormat(
+                    "ja-JP"
+                ).format(value) + "円";
+
+            }
+
+        }
+
+
+        if (
+            typeof value === "boolean"
+        ) {
+
+            return value
+                ? "はい"
+                : "いいえ";
+
+        }
+
+
+        return String(value);
+
+    },
+
+
+    /* -----------------------------------------------------
+       Selective disclosure
+    ----------------------------------------------------- */
+
+    createPresentation(scenarioKey) {
+
+        const scenario =
+            this.scenarios[scenarioKey];
+
+
+        if (!scenario) {
+
+            throw new Error(
+                "シナリオが存在しません。"
+            );
+
+        }
+
+
+        const disclosedClaims = {};
+
+
+        const disclosedKeys = [];
+
+
+        for (
+            const claim
+            of scenario.claims
+        ) {
+
+            const separator =
+                claim.indexOf(".");
+
+
+            if (separator < 1) {
+                continue;
+            }
+
+
+            const vcType =
+                claim.slice(
+                    0,
+                    separator
+                );
+
+
+            const key =
+                claim.slice(
+                    separator + 1
+                );
+
+
+            const vc =
+                this.credentials.get(
+                    vcType
+                );
+
+
+            if (
+                !vc ||
+                !vc.credentialSubject ||
+                !Object.prototype.hasOwnProperty.call(
+                    vc.credentialSubject,
+                    key
+                )
+            ) {
+
+                continue;
+
+            }
+
+
+            disclosedClaims[key] =
+                vc.credentialSubject[key];
+
+
+            disclosedKeys.push(
+                claim
+            );
+
+        }
+
+
+        /* -----------------------------------------
+           Demo challenge
+        ----------------------------------------- */
+
+        const challenge =
+            this.createChallenge();
+
+
+        const vp = {
+
+            "@context": [
+                "https://www.w3.org/2018/credentials/v1"
+            ],
+
+            "type": [
+                "VerifiablePresentation"
+            ],
+
+            "presentationPurpose":
+                scenario.purpose,
+
+            "verifier":
+                scenario.verifier,
+
+            "challenge":
+                challenge,
+
+            "verifiableCredential": [
+
+                {
+
+                    "type": [
+                        "DisclosedClaims"
+                    ],
+
+                    "credentialSubject":
+                        disclosedClaims
+
+                }
+
+            ],
+
+            "proof": {
+
+                "type":
+                    "DemoSignature",
+
+                "status":
+                    "DEMO_ONLY",
+
+                "note":
+                    "これは実際の暗号署名ではありません。"
+
+            }
+
+        };
+
+
+        return {
+
+            vp,
+
+            disclosedKeys,
+
+            verifier:
+                scenario.verifier,
+
+            purpose:
+                scenario.purpose
+
+        };
+
+    },
+
+
+    /* -----------------------------------------------------
+       Challenge
+    ----------------------------------------------------- */
+
+    createChallenge() {
+
+        if (
+            window.crypto &&
+            window.crypto.getRandomValues
+        ) {
+
+            const bytes =
+                new Uint8Array(16);
+
+
+            window.crypto.getRandomValues(
+                bytes
+            );
+
+
+            return Array
+                .from(bytes)
+                .map(
+                    byte =>
+                        byte
+                            .toString(16)
+                            .padStart(2, "0")
+                )
+                .join("");
+
+        }
+
+
+        return (
+            Date.now()
+            + "-"
+            + Math.random()
+                .toString(36)
+                .slice(2)
+        );
+
+    },
+
+
+    /* -----------------------------------------------------
+       Audit log
+    ----------------------------------------------------- */
+
+    getAuditLogs() {
+
+        try {
+
+            const data =
+                localStorage.getItem(
+                    this.auditStorageKey
+                );
+
+
+            if (!data) {
+                return [];
+            }
+
+
+            const parsed =
+                JSON.parse(data);
+
+
+            return Array.isArray(parsed)
+                ? parsed
+                : [];
+
+        } catch {
+
+            return [];
+
+        }
+
+    },
+
+
+    saveAuditLog(log) {
+
+        const logs =
+            this.getAuditLogs();
+
+
+        logs.unshift(log);
+
+
+        /*
+         * 無制限にlocalStorageへ
+         * 蓄積しない。
+         */
+
+        const limited =
+            logs.slice(0, 100);
+
+
+        localStorage.setItem(
+            this.auditStorageKey,
+            JSON.stringify(limited)
+        );
+
+    },
+
+
+    renderAudit() {
+
+        const tbody =
+            document.getElementById(
+                "audit-table-body"
+            );
+
+
+        tbody.replaceChildren();
+
+
+        const logs =
+            this.getAuditLogs();
+
+
+        if (logs.length === 0) {
+
+            const row =
+                document.createElement("tr");
+
+
+            const cell =
+                document.createElement("td");
+
+
+            cell.colSpan = 5;
+
+            cell.className =
+                "empty";
+
+            cell.textContent =
+                "まだ提示履歴はありません。";
+
+
+            row.append(cell);
+
+            tbody.append(row);
+
+            return;
+
+        }
+
+
+        for (const log of logs) {
+
+            const row =
+                document.createElement("tr");
+
+
+            this.appendCell(
+                row,
+                log.timestamp
+            );
+
+
+            this.appendCell(
+                row,
+                log.verifier
+            );
+
+
+            this.appendCell(
+                row,
+                log.purpose
+            );
+
+
+            this.appendCell(
+                row,
+                log.items.join(", ")
+            );
+
+
+            const statusCell =
+                document.createElement("td");
+
+
+            const status =
+                document.createElement("span");
+
+
+            status.className =
+                "status";
+
+            status.textContent =
+                "提示シミュレーション";
+
+
+            statusCell.append(status);
+
+            row.append(statusCell);
+
+
+            tbody.append(row);
+
+        }
+
+    },
+
+
+    appendCell(row, value) {
+
+        const cell =
+            document.createElement("td");
+
+
+        cell.textContent =
+            String(value ?? "");
+
+
+        row.append(cell);
+
+    },
+
+
+    clearAudit() {
+
+        localStorage.removeItem(
+            this.auditStorageKey
+        );
+
+
+        this.renderAudit();
+
+    },
+
+
+    /* -----------------------------------------------------
+       Error
+    ----------------------------------------------------- */
+
+    renderError(message) {
+
+        const container =
+            document.getElementById(
+                "vc-container"
+            );
+
+
+        const error =
+            document.createElement("div");
+
+
+        error.className =
+            "error";
+
+
+        error.textContent =
+            message;
+
+
+        container.replaceChildren(error);
+
+    }
+
+};
+
+
+/* =========================================================
+   Modal helpers
+========================================================= */
+
+function openModal(id) {
+
+    const modal =
+        document.getElementById(id);
+
+
+    modal.classList.add(
+        "is-open"
+    );
+
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+}
+
+
+function closeModal(id) {
+
+    const modal =
+        document.getElementById(id);
+
+
+    modal.classList.remove(
+        "is-open"
+    );
+
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+}
+
+
+/* =========================================================
+   Presentation flow
+========================================================= */
+
+function showPresentation(scenarioKey) {
+
+    try {
+
+        const result =
+            Wallet.createPresentation(
+                scenarioKey
+            );
+
+
+        Wallet.currentPresentation =
+            result;
+
+
+        document
+            .getElementById(
+                "presentation-info"
+            )
+            .textContent =
+            `提示先: ${result.verifier} / 目的: ${result.purpose}`;
+
+
+        document
+            .getElementById(
+                "presentation-status"
+            )
+            .textContent =
+            `開示されるClaim: ${result.disclosedKeys.join(", ")}`;
+
+
+        document
+            .getElementById(
+                "vp-preview"
+            )
+            .textContent =
+            JSON.stringify(
+                result.vp,
+                null,
+                2
+            );
+
+
+        openModal(
+            "presentation-modal"
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "提示データの生成に失敗しました。"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   Events
+========================================================= */
+
+document
+    .querySelectorAll(
+        "[data-scenario]"
+    )
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                showPresentation(
+                    button.dataset.scenario
+                );
+
+            }
+        );
+
+    });
+
+
+document
+    .getElementById(
+        "presentation-close"
+    )
+    .addEventListener(
+        "click",
+        () => closeModal(
+            "presentation-modal"
+        )
+    );
+
+
+document
+    .getElementById(
+        "presentation-cancel"
+    )
+    .addEventListener(
+        "click",
+        () => closeModal(
+            "presentation-modal"
+        )
+    );
+
+
+document
+    .getElementById(
+        "audit-close"
+    )
+    .addEventListener(
+        "click",
+        () => closeModal(
+            "audit-modal"
+        )
+    );
+
+
+document
+    .getElementById(
+        "audit-close-bottom"
+    )
+    .addEventListener(
+        "click",
+        () => closeModal(
+            "audit-modal"
+        )
+    );
+
+
+document
+    .getElementById(
+        "audit-clear"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            if (
+                confirm(
+                    "この端末の提示履歴をすべて消去しますか？"
+                )
+            ) {
+
+                Wallet.clearAudit();
+
+            }
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "presentation-submit"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const current =
+                Wallet.currentPresentation;
+
+
+            if (!current) {
+                return;
+            }
+
+
+            const now =
+                new Date();
+
+
+            Wallet.saveAuditLog({
+
+                timestamp:
+                    now.toLocaleString(
+                        "ja-JP",
+                        {
+                            timeZone:
+                                "Asia/Tokyo"
+                        }
+                    ),
+
+                verifier:
+                    current.verifier,
+
+                purpose:
+                    current.purpose,
+
+                items:
+                    current.disclosedKeys
+
+            });
+
+
+            Wallet.renderAudit();
+
+
+            closeModal(
+                "presentation-modal"
+            );
+
+
+            alert(
+                "提示シミュレーションが完了しました。\n\n実際の通信・電子署名・外部送信は行われていません。"
+            );
+
+        }
+    );
+
+
+/* ---------------------------------------------------------
+   Modal background click
+--------------------------------------------------------- */
+
+document
+    .querySelectorAll(".modal")
+    .forEach(modal => {
+
+        modal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target === modal
+                ) {
+
+                    modal.classList.remove(
+                        "is-open"
+                    );
+
+                }
+
+            }
+        );
+
+    });
+
+
+/* ---------------------------------------------------------
+   ESC
+--------------------------------------------------------- */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            document
+                .querySelectorAll(
+                    ".modal.is-open"
+                )
+                .forEach(modal => {
+
+                    modal.classList.remove(
+                        "is-open"
+                    );
+
+                });
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   Start
+========================================================= */
+
+Wallet.init();
+
+</script>
+
+</body>
+</html>
