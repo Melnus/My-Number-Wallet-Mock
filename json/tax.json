@@ -1,0 +1,28 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1"
+  ],
+  "id": "urn:demo:vc:tax-002",
+  "type": [
+    "VerifiableCredential",
+    "TaxIncomeCredential"
+  ],
+  "issuer": {
+    "id": "did:example:demo-tax-authority",
+    "name": "デモ税務機関（架空）"
+  },
+  "issuanceDate": "2026-06-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:example:demo-user-001",
+    "taxYear": "令和5年分（デモ）",
+    "taxableStatus": "課税",
+    "grossIncome": 3240000,
+    "taxAmount": 185000,
+    "isIncomeOver300k": true
+  },
+  "proof": {
+    "type": "DemoSignature",
+    "status": "DEMO_ONLY",
+    "note": "これは実際の電子署名ではありません。"
+  }
+}
