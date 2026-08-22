@@ -1,0 +1,28 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1"
+  ],
+  "id": "urn:demo:vc:identity-001",
+  "type": [
+    "VerifiableCredential",
+    "IdentityCredential"
+  ],
+  "issuer": {
+    "id": "did:example:demo-government",
+    "name": "デモ行政機関（架空）"
+  },
+  "issuanceDate": "2026-04-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:example:demo-user-001",
+    "name": "デジタル 太郎",
+    "birthDate": "1994-01-10",
+    "gender": "男性",
+    "address": "千葉県柏市（デモ住所）",
+    "isOver20": true
+  },
+  "proof": {
+    "type": "DemoSignature",
+    "status": "DEMO_ONLY",
+    "note": "これは実際の電子署名ではありません。"
+  }
+}
