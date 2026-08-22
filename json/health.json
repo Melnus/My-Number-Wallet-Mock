@@ -1,0 +1,27 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1"
+  ],
+  "id": "urn:demo:vc:health-003",
+  "type": [
+    "VerifiableCredential",
+    "HealthInsuranceCredential"
+  ],
+  "issuer": {
+    "id": "did:example:demo-health-insurer",
+    "name": "デモ保険者（架空）"
+  },
+  "issuanceDate": "2026-04-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "did:example:demo-user-001",
+    "insurerName": "デモ健康保険",
+    "qualificationDate": "2016-04-01",
+    "copaymentRatio": "3割",
+    "relationship": "本人"
+  },
+  "proof": {
+    "type": "DemoSignature",
+    "status": "DEMO_ONLY",
+    "note": "これは実際の電子署名ではありません。"
+  }
+}
