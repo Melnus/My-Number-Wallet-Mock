@@ -15,7 +15,7 @@
   "credentialSubject": {
     "id": "did:example:demo-user-001",
     "name": "デジタル 太郎",
-    "birthDate": "1994-01-10",
+    "birthDate": "1990-01-01",
     "gender": "男性",
     "address": "千葉県柏市（デモ住所）",
     "isOver20": true
